@@ -1,0 +1,73 @@
+package com.hcl.narendran;
+
+class CommonObject {
+		private boolean isPrintingStarted = false;
+	public synchronized void printEven(int i){
+		if (isPrintingStarted) {
+			System.out.println(i);
+			isPrintingStarted = false;
+			notify();
+		} else
+			try {
+				wait();
+			} catch (InterruptedException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+	}
+	public synchronized void printOdd(int i) {
+		if (!isPrintingStarted) {
+			System.out.println(i);
+			isPrintingStarted = true;
+			notify();
+		} else {
+			try {
+				wait();
+			} catch (InterruptedException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
+	}
+}
+class ThreadEven implements Runnable {
+	CommonObject commonObject;
+	
+
+	ThreadEven(CommonObject commonObject) {
+		this.commonObject = commonObject;
+	}
+	@Override
+	public void run() {
+		int a[] = {2,4,6,8,10 };
+		for (int i = 0; i < a.length; i++) {
+			commonObject.printEven(a[i]);
+		}
+	}
+}
+class ThreadOdd implements Runnable {
+	CommonObject commonObject;
+		ThreadOdd(CommonObject commonObject) {
+		this.commonObject = commonObject;
+	}
+	@Override
+	public void run() {
+		final int oddArray[] = {1,3,5,7,9};
+		for (final int oddNum : oddArray ) {
+			commonObject.printOdd(oddNum);			
+		}
+	}
+}
+public class PrintingNumbersMain {
+	
+	public static void main(String[] args) {
+		CommonObject commonObject = new CommonObject();
+		ThreadEven threadEven = new ThreadEven(commonObject);
+		ThreadOdd threadOdd = new ThreadOdd(commonObject);
+		Thread evenThread, oddThread;
+		evenThread = new Thread(threadEven);		
+		oddThread = new Thread(threadOdd);
+		evenThread.start();
+		oddThread.start();
+	}
+}
